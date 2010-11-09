@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent" android:layout_height="fill_parent">
+        <Button android:text="Dismiss" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/dismiss"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true" />
+        <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent" android:layout_height="fill_parent"
+                android:layout_above="@id/dismiss">
+                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:orientation="vertical">
+                        <TextView
+                                android:text="You can access this help screen at any time using the menu key, and selecting about.\n"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        
+                        <TextView android:text="0.1 Changelog"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:textStyle="bold" />
+                        <TextView android:text="- New project started!"
+                                android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+        </ScrollView>
+</RelativeLayout>
