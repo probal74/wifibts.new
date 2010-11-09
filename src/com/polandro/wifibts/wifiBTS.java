@@ -2,6 +2,10 @@ package com.polandro.wifibts;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
@@ -30,14 +34,14 @@ public class wifiBTS extends Activity {
         boolean FirstLoad = settings.getBoolean(FIRST_LOAD, true);
         if (FirstLoad) {
                 showDialog(DIALOG_ABOUT);
-        }
-        
+                triggerNotification(1,"WifiBTS", "First start of the application");
+        }        
     }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
+        inflater.inflate(R.menu.main_menu, menu);      
         return true;
     }
     
@@ -84,4 +88,29 @@ public class wifiBTS extends Activity {
             return null;
     }
     
+    protected void triggerNotification(int id, String Title, String Message) {
+    	//Get a reference to the NotificationManager
+    	String ns = Context.NOTIFICATION_SERVICE;
+    	NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
+    	
+    	//Instantiate the Notification
+    	int icon = R.drawable.icon;
+    	CharSequence tickerText = Title;
+    	long when = System.currentTimeMillis();
+    	
+    	Notification notification = new Notification(icon, tickerText, when);
+    	
+    	//Define the Notification's expanded message and Intent
+    	Context context = getApplicationContext();
+    	CharSequence contentTitle = Title;
+    	CharSequence contentText = Message;
+    	Intent notificationIntent = new Intent(this, wifiBTS.class);
+    	PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+    	notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+    	notification.flags |= Notification.FLAG_AUTO_CANCEL;
+    	
+    	//Pass the Notification to the NotificationManager
+    	mNotificationManager.notify(id, notification);
+    }    
 }
