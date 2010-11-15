@@ -13,6 +13,8 @@
         </activity>
 
     <activity android:name="Preferences" android:label="@string/preferences_title"></activity>
+<activity android:name="Locations"></activity>
+<activity android:name="Logs"></activity>
 </application>
 
 
