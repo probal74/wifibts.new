@@ -33,19 +33,13 @@ public class wifiBTS extends TabActivity {
         setContentView(R.layout.main);
                 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());        
-        boolean FirstLoad = settings.getBoolean(FIRST_LOAD, true);
-        if (FirstLoad) {
-                showDialog(DIALOG_ABOUT);
-                triggerNotification(1,"WifiBTS", "First start of the application");
-        }
-        
+                
         Resources res = getResources(); // Resource object to get Drawables
         TabHost tabHost = getTabHost();  // The activity TabHost
-        TabHost.TabSpec spec;  // Resusable TabSpec for each tab
+        TabHost.TabSpec spec;  // Reusable TabSpec for each tab
         Intent intent;  // Reusable Intent for each tab
         // Create an Intent to launch an Activity for the tab (to be reused)
-        intent = new Intent().setClass(this, Locations.class);
-        
+        intent = new Intent().setClass(this, Locations.class);        
         spec = tabHost.newTabSpec("Locations").setIndicator("Locations", 
         		res.getDrawable(android.R.drawable.ic_menu_mylocation)).setContent(intent);        
         tabHost.addTab(spec);
@@ -55,7 +49,13 @@ public class wifiBTS extends TabActivity {
         
         spec = tabHost.newTabSpec("Logs").setIndicator("Logs", 
         		res.getDrawable(android.R.drawable.ic_menu_recent_history)).setContent(intent);        
-        tabHost.addTab(spec);        
+        tabHost.addTab(spec);
+        
+        boolean FirstLoad = settings.getBoolean(FIRST_LOAD, true);
+        if (FirstLoad) {
+                showDialog(DIALOG_ABOUT);
+                triggerNotification(1,"WifiBTS", "First start of the application");
+        }
     }
     
     @Override
