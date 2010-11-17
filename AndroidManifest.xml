@@ -16,6 +16,7 @@
 	<activity android:name="Logs"></activity>
 
 <activity android:name="Locations"></activity>
+<activity android:label="Type in the value" android:name="TextEntryActivity" android:theme="@android:style/Theme.Dialog"></activity>
 </application>
 
 
