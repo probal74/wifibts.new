@@ -3,4 +3,5 @@
   xmlns:android="http://schemas.android.com/apk/res/android">
 <item android:menuCategory="container" android:orderInCategory="99" android:id="@+id/about" android:icon="@android:drawable/ic_menu_info_details" android:title="About"></item>
 <item android:id="@+id/preferences" android:icon="@android:drawable/ic_menu_preferences" android:title="Preferences" android:menuCategory="container"></item>
+<item android:id="@+id/startservice" android:title="Start Service" android:menuCategory="container" android:icon="@android:drawable/ic_media_play"></item>
 </menu>

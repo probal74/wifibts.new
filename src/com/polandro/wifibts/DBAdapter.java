@@ -1,5 +1,7 @@
 package com.polandro.wifibts;
 
+import java.util.Vector;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -36,6 +38,7 @@ public class DBAdapter {
 
         private DatabaseHelper DBHelper;
         private SQLiteDatabase db;
+        Vector<Integer> Cells;
 
         //Constructor
         public DBAdapter(Context ctx) {
@@ -97,6 +100,18 @@ public class DBAdapter {
         // ---retrieves all cells for an location---
         public Cursor getCells(String location) {        	
         	return db.query(DATABASE_TABLE_CELL, new String[] {KEY_CELL_ROWID, KEY_CELL_LOCATION, KEY_CELL_LAC, KEY_CELL_CELLID}, KEY_CELL_LOCATION + "=" + location , null, null, null, null);                        
+        }
+        // ---retrieves all cells for an location---
+        public Vector<Integer> getAllCells() {        	 
+        	 Cursor c = db.query(DATABASE_TABLE_CELL, new String[] {KEY_CELL_CELLID}, null, null, null, null, null);
+        	 Cells = new Vector<Integer>();
+        	 if (c.moveToFirst())
+             {
+                 do {
+                     Cells.add(c.getInt(0));
+                 } while (c.moveToNext());
+             }
+        	 return Cells;
         }
         // ---inserts a lac and cellid into the locations table---
         public long addCells(String location_id, int lac, int cellid) {

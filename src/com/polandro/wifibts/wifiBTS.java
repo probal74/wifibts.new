@@ -76,6 +76,9 @@ public class wifiBTS extends TabActivity {
         	Intent settingsActivity = new Intent(getBaseContext(), Preferences.class);
         	startActivity(settingsActivity);
         	return true;
+        case R.id.startservice:
+        	startService(new Intent(wifiBTS.this, WifiBTSService.class));
+        	return true;
         default:
             return super.onOptionsItemSelected(item);
         }
