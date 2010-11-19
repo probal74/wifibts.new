@@ -50,6 +50,7 @@ public class TextEntryActivity extends Activity {
 	    private void executeDone() {
 	        Intent resultIntent = new Intent();
 	        resultIntent.putExtra("value", TextEntryActivity.this.et.getText().toString());
+	        resultIntent.putExtra("_id", getIntent().getExtras().getString("_id"));
 	        setResult(Activity.RESULT_OK, resultIntent);
 	        finish();
 	    }
