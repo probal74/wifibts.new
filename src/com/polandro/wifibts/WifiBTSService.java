@@ -5,6 +5,7 @@ import java.util.Vector;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
@@ -17,6 +18,7 @@ public class WifiBTSService extends Service {
 	private DBAdapter wifiBTSdb;
 	private Vector<Integer> Cells;
 	private TelephonyManager telMgr;
+    private WifiManager wifiMgr;
     private GsmCellLocation GCL;
     private PhoneStateListener listener;
 	
@@ -40,24 +42,29 @@ public class WifiBTSService extends Service {
         wifiBTSdb.open_rw();
         Cells = wifiBTSdb.getAllCells();        
         wifiBTSdb.close();
+        wifiBTSdb = null;
         
-        telMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);                 //telMgr - connect to the system telephony service				
-		GCL = (GsmCellLocation)telMgr.getCellLocation();
-		
+        wifiMgr = (WifiManager)getSystemService(Context.WIFI_SERVICE);                                  //wifiMgr - connect to the system wifi service
+        telMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);                 //telMgr - connect to the system telephony service			
+				
 		listener = new PhoneStateListener() {                                                                                   //Listener for events from telephony manager
             public void onCellLocationChanged(CellLocation location) {                          //GsmCellLocation changed event
                 GCL = (GsmCellLocation)telMgr.getCellLocation();
                 if (GCL != null) {             //If current location is available
                 	if (isCellhere(GCL.getCid())) {
-                		Toast.makeText(getApplicationContext(), "Cell present:" + GCL.getCid(), Toast.LENGTH_SHORT).show();                                                                                //get the actual CellID
+                		// włącz
+                		if( ! wifiMgr.isWifiEnabled() ) {
+                			wifiMgr.setWifiEnabled(true);
+                		}
                 	}
                 	else {
-                		Toast.makeText(getApplicationContext(), "Cell absent:" + GCL.getCid(), Toast.LENGTH_SHORT).show();                                                                                //get the actual CellID
+                		//wyłącz
+                		wifiMgr.setWifiEnabled(false);                		
                 	}
                 }
             }
 		};
-		telMgr.listen(listener, PhoneStateListener.LISTEN_CELL_LOCATION);                               //Register the listener with the telephony manager
+		telMgr.listen(listener, PhoneStateListener.LISTEN_CELL_LOCATION);   //Register the listener with the telephony manager
 	}
 	
 	public boolean isCellhere(int cell){
