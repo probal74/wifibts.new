@@ -1,11 +1,7 @@
 package com.polandro.wifibts;
 
 import android.app.Dialog;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.TabActivity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
@@ -54,7 +50,6 @@ public class wifiBTS extends TabActivity {
         boolean FirstLoad = settings.getBoolean(FIRST_LOAD, true);
         if (FirstLoad) {
                 showDialog(DIALOG_ABOUT);
-                triggerNotification(1,"WifiBTS", "First start of the application");
         }
     }
     
@@ -77,8 +72,9 @@ public class wifiBTS extends TabActivity {
         	startActivity(settingsActivity);
         	return true;
         case R.id.startservice:
+        	stopService(new Intent(wifiBTS.this, WifiBTSService.class));
         	startService(new Intent(wifiBTS.this, WifiBTSService.class));
-        	return true;
+        	return true;        	
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -109,31 +105,5 @@ public class wifiBTS extends TabActivity {
             	 return dialog;
             }
             return null;
-    }
-    
-    protected void triggerNotification(int id, String Title, String Message) {
-    	//Get a reference to the NotificationManager
-    	String ns = Context.NOTIFICATION_SERVICE;
-    	NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
-    	
-    	//Instantiate the Notification
-    	int icon = R.drawable.icon;
-    	CharSequence tickerText = Title;
-    	long when = System.currentTimeMillis();
-    	
-    	Notification notification = new Notification(icon, tickerText, when);
-    	
-    	//Define the Notification's expanded message and Intent
-    	Context context = getApplicationContext();
-    	CharSequence contentTitle = Title;
-    	CharSequence contentText = Message;
-    	Intent notificationIntent = new Intent(this, wifiBTS.class);
-    	PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-    	notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-    	notification.flags |= Notification.FLAG_AUTO_CANCEL;
-    	
-    	//Pass the Notification to the NotificationManager
-    	mNotificationManager.notify(id, notification);
-    }    
+    } 
 }
