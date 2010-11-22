@@ -1,17 +1,16 @@
 package com.polandro.wifibts;
 
 import java.util.Vector;
-
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
-import android.widget.Toast;
 
 public class WifiBTSService extends Service {
 
@@ -53,8 +52,10 @@ public class WifiBTSService extends Service {
                 if (GCL != null) {             //If current location is available
                 	if (isCellhere(GCL.getCid())) {
                 		// włącz
-                		if( ! wifiMgr.isWifiEnabled() ) {
-                			wifiMgr.setWifiEnabled(true);
+                		if (Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) == 1) {
+                			if( ! wifiMgr.isWifiEnabled() ) {
+                				wifiMgr.setWifiEnabled(true);
+                			}
                 		}
                 	}
                 	else {
