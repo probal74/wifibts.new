@@ -1,5 +1,7 @@
 package com.polandro.wifibts;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 import android.app.Service;
 import android.content.Context;
@@ -20,6 +22,7 @@ public class WifiBTSService extends Service {
     private WifiManager wifiMgr;
     private GsmCellLocation GCL;
     private PhoneStateListener listener;
+    private Timer timer = new Timer();
 	
 	public WifiBTSService() {				
 	}
@@ -66,6 +69,17 @@ public class WifiBTSService extends Service {
             }
 		};
 		telMgr.listen(listener, PhoneStateListener.LISTEN_CELL_LOCATION);   //Register the listener with the telephony manager
+		
+		timer.schedule( new TimerTask() {  //register switch-on on the time from the preferences
+			public void run() {
+				// włącz
+        		if (Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) == 1) {
+        			if( ! wifiMgr.isWifiEnabled() ) {
+        				wifiMgr.setWifiEnabled(true);
+        			}
+        		}
+			}
+			}, 0);
 	}
 	
 	public boolean isCellhere(int cell){
