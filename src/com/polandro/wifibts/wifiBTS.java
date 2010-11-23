@@ -72,7 +72,7 @@ public class wifiBTS extends TabActivity {
         	startActivity(settingsActivity);
         	return true;
         case R.id.startservice:
-        	stopService(new Intent(wifiBTS.this, WifiBTSService.class));
+        	//stopService(new Intent(wifiBTS.this, WifiBTSService.class));
         	startService(new Intent(wifiBTS.this, WifiBTSService.class));
         	return true;        	
         default:

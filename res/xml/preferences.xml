@@ -2,7 +2,7 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android" android:title="@string/preferences_title">
 <CheckBoxPreference android:summary="Shows about window on startup" android:title="First start" android:key="FirstLoad"></CheckBoxPreference>
-<CheckBoxPreference android:key="NoNetworkMode" android:title="No network period"></CheckBoxPreference>
-<TimePickerPreference android:title="No network mode start" android:key="NoNetworkModeOn" android:dependency="NoNetworkMode"> </TimePickerPreference>
-<TimePickerPreference android:title="No network mode stop" android:key="NoNetworkModeOff" android:dependency="NoNetworkMode"> </TimePickerPreference>
+<CheckBoxPreference android:key="NoDataMode" android:title="No data transfer period"></CheckBoxPreference>
+<TimePickerPreference android:title="No data start" android:key="NoDataModeOn" android:dependency="NoDataMode"> </TimePickerPreference>
+<TimePickerPreference android:title="No data stop" android:key="NoDataModeOff" android:dependency="NoDataMode"> </TimePickerPreference>
 </PreferenceScreen>

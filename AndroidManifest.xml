@@ -19,6 +19,7 @@
 <activity android:label="Type in the value" android:name="TextEntryActivity" android:theme="@android:style/Theme.Dialog"></activity>
 <activity android:name="Location"></activity>
 <service android:name="WifiBTSService"></service>
+<receiver android:name="RepeatingAlarmReceiver"></receiver>
 </application>
  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
         <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>

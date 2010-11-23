@@ -1,9 +1,8 @@
 package com.polandro.wifibts;
 
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Calendar;
 import java.util.Vector;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -28,8 +27,7 @@ public class WifiBTSService extends Service {
     private WifiManager wifiMgr;
     private GsmCellLocation GCL;
     private PhoneStateListener listener;
-    private Timer NoDataModeON = new Timer();
-    private Timer NoDataModeOFF = new Timer();
+    private AlarmManager alarmManager;    
     
 	public WifiBTSService() {				
 	}
@@ -52,65 +50,76 @@ public class WifiBTSService extends Service {
         Cells = wifiBTSdb.getAllCells();        
         wifiBTSdb.close();
         wifiBTSdb = null;
-        Date NoNetworkModeOn = new Date();
-        Date NoNetworkModeOff = new Date();
         
         wifiMgr = (WifiManager)getSystemService(Context.WIFI_SERVICE);                                  //wifiMgr - connect to the system wifi service
         telMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);                 //telMgr - connect to the system telephony service			
 				
 		listener = new PhoneStateListener() {                                                                                   //Listener for events from telephony manager
             public void onCellLocationChanged(CellLocation location) {                          //GsmCellLocation changed event
-                GCL = (GsmCellLocation)telMgr.getCellLocation();
+            	
+            	if (telMgr.getPhoneType() == TelephonyManager.PHONE_TYPE_GSM) {
+            		GCL = (GsmCellLocation)telMgr.getCellLocation();
+            	}
+                
                 if (GCL != null) {             //If current location is available
                 	if (isCellhere(GCL.getCid())) {
                 		// włącz
                 		if (Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) == 1) {
                 			if( ! wifiMgr.isWifiEnabled() ) {
                 				wifiMgr.setWifiEnabled(true);
-                                triggerNotification(1,"WifiBTS", "Wifi enabled");
+                                triggerNotification(1,"WifiBTS", "Wifi enabled @"+ Calendar.getInstance() );
                 			}
                 		}
                 	}
                 	else {
                 		//wyłącz
-                		wifiMgr.setWifiEnabled(false);
-                        triggerNotification(1,"WifiBTS", "Wifi disabled");
-
+                		if( wifiMgr.isWifiEnabled() ) {
+                			wifiMgr.setWifiEnabled(false);
+                			triggerNotification(1,"WifiBTS", "Wifi disabled @"+ Calendar.getInstance() );
+                        }
                 	}
+                }                
+                else {
+                	triggerNotification(1,"WifiBTS", "Not a GSM phone type");
                 }
             }
 		};
 		telMgr.listen(listener, PhoneStateListener.LISTEN_CELL_LOCATION);   //Register the listener with the telephony manager
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());		
-
-		NoNetworkModeOn.setHours(Integer.parseInt(settings.getString("NoNetworkModeOn", "00:00").split(":")[0]));		
-		NoNetworkModeOn.setMinutes(Integer.parseInt(settings.getString("NoNetworkModeOn", "00:00").split(":")[1]));
 		
-		NoNetworkModeOff.setHours(Integer.parseInt(settings.getString("NoNetworkModeOff", "00:00").split(":")[0]));		
-		NoNetworkModeOff.setMinutes(Integer.parseInt(settings.getString("NoNetworkModeOff", "00:00").split(":")[1]));
+		Calendar NoDataModeOn = Calendar.getInstance();
+		NoDataModeOn.set(Calendar.HOUR, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[0]));
+		NoDataModeOn.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[1]));
+		NoDataModeOn.set(Calendar.SECOND, 0);
 		
-		if (settings.getBoolean("NoNetworkMode", false)) {
+		Calendar NoDataModeOff = Calendar.getInstance();		
+		NoDataModeOff.set(Calendar.HOUR, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[0]));
+		NoDataModeOff.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[1]));
+		NoDataModeOff.set(Calendar.SECOND, 0);
 		
-		NoDataModeOFF.schedule( new TimerTask() {  //register switch-on on the time from the preferences
-			public void run() {
-				// włącz
-        		if (Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) == 1) {
-        			if( ! wifiMgr.isWifiEnabled() ) {
-        				wifiMgr.setWifiEnabled(true);
-        			}
-        		}
-			}
-			}, NoNetworkModeOff);
+		if (settings.getBoolean("NoDataMode", false)) {		
 		
-		NoDataModeON.schedule( new TimerTask() {  //register switch-on on the time from the preferences
-			public void run() {
-				wifiMgr.setWifiEnabled(false);        		
-			}
-			}, NoNetworkModeOn);
-			
+		Intent wifi_on = new Intent(this, RepeatingAlarmReceiver.class);
+		wifi_on.putExtra("ToggleWifi", true);
+	    PendingIntent pending_wifi_on = PendingIntent.getBroadcast(getApplicationContext(), 0, wifi_on, PendingIntent.FLAG_ONE_SHOT);
+		
+		Intent wifi_off = new Intent(this, RepeatingAlarmReceiver.class);
+		wifi_off.putExtra("ToggleWifi", false);
+		PendingIntent pending_wifi_off = PendingIntent.getBroadcast(getApplicationContext(), 1, wifi_off, PendingIntent.FLAG_ONE_SHOT);        
+       
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOff.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_on); // every 24h
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOn.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_off);
 		}
 	}
+	
+/*	@Override
+	public void onDestroy() {
+		alarmManager.cancel(pending_wifi_on);
+		alarmManager.cancel(pending_wifi_off);
+		super.onDestroy();
+	}*/
 	
 	public boolean isCellhere(int cell){
         int i=0;
