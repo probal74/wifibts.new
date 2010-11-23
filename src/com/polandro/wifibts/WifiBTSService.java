@@ -29,9 +29,6 @@ public class WifiBTSService extends Service {
     private PhoneStateListener listener;
     private AlarmManager alarmManager;    
     
-	public WifiBTSService() {				
-	}
-	
     @Override
     public void onCreate() {
             super.onCreate();
@@ -67,7 +64,7 @@ public class WifiBTSService extends Service {
                 		if (Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) == 1) {
                 			if( ! wifiMgr.isWifiEnabled() ) {
                 				wifiMgr.setWifiEnabled(true);
-                                triggerNotification(1,"WifiBTS", "Wifi enabled @"+ Calendar.getInstance() );
+                                triggerNotification(1,"WifiBTS", "Wifi enabled @"+ Calendar.getInstance().getTime().toLocaleString() );
                 			}
                 		}
                 	}
@@ -75,7 +72,7 @@ public class WifiBTSService extends Service {
                 		//wyłącz
                 		if( wifiMgr.isWifiEnabled() ) {
                 			wifiMgr.setWifiEnabled(false);
-                			triggerNotification(1,"WifiBTS", "Wifi disabled @"+ Calendar.getInstance() );
+                			triggerNotification(1,"WifiBTS", "Wifi disabled @"+ Calendar.getInstance().getTime().toLocaleString() );
                         }
                 	}
                 }                
@@ -89,14 +86,18 @@ public class WifiBTSService extends Service {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());		
 		
 		Calendar NoDataModeOn = Calendar.getInstance();
-		NoDataModeOn.set(Calendar.HOUR, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[0]));
+		NoDataModeOn.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[0]));
 		NoDataModeOn.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[1]));
 		NoDataModeOn.set(Calendar.SECOND, 0);
 		
 		Calendar NoDataModeOff = Calendar.getInstance();		
-		NoDataModeOff.set(Calendar.HOUR, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[0]));
+		NoDataModeOff.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[0]));
 		NoDataModeOff.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[1]));
 		NoDataModeOff.set(Calendar.SECOND, 0);
+    	triggerNotification(1,"WifiBTS", "NoDataModeOn: "+ NoDataModeOn.getTime().toLocaleString());
+    	triggerNotification(2,"WifiBTS", "NoDataModeOff: "+ NoDataModeOff.getTime().toLocaleString());
+
+		
 		
 		if (settings.getBoolean("NoDataMode", false)) {		
 		
@@ -119,6 +120,13 @@ public class WifiBTSService extends Service {
 		alarmManager.cancel(pending_wifi_on);
 		alarmManager.cancel(pending_wifi_off);
 		super.onDestroy();
+	}*/
+	
+	/*private static String pad(int c) {
+	    if (c >= 10)
+	        return String.valueOf(c);
+	    else
+	        return "0" + String.valueOf(c);
 	}*/
 	
 	public boolean isCellhere(int cell){

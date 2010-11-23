@@ -5,9 +5,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TimePicker;
 
-public class TimePickerPreference extends DialogPreference implements
-		TimePicker.OnTimeChangedListener {
- 
+//public class TimePickerPreference extends DialogPreference implements TimePicker.OnTimeChangedListener {
+public class TimePickerPreference extends DialogPreference {
 	/**
 	 * The validation expression for this preference
 	 */
@@ -17,6 +16,7 @@ public class TimePickerPreference extends DialogPreference implements
 	 * The default value for this preference
 	 */
 	private String defaultValue;
+	private TimePicker tp;
  
 	/**
 	 * @param context
@@ -44,17 +44,10 @@ public class TimePickerPreference extends DialogPreference implements
 		setPersistent(true);
 	}
  
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.preference.DialogPreference#onCreateDialogView()
-	 */
 	@Override
 	protected View onCreateDialogView() {
  
-		TimePicker tp = new TimePicker(getContext());
-		tp.setIs24HourView(true);
-		tp.setOnTimeChangedListener(this);
+		tp = new TimePicker(getContext());		
  
 		int h = getHour();
 		int m = getMinute();
@@ -62,26 +55,22 @@ public class TimePickerPreference extends DialogPreference implements
 			tp.setCurrentHour(h);
 			tp.setCurrentMinute(m);
 		}
- 
+		tp.setIs24HourView(true);
 		return tp;
 	}
- 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * android.widget.TimePicker.OnTimeChangedListener#onTimeChanged(android
-	 * .widget.TimePicker, int, int)
-	 */
 	
-	public void onTimeChanged(TimePicker view, int hour, int minute) {
- 
-		persistString(hour + ":" + minute);
+	@Override
+	protected void onDialogClosed (boolean positiveResult){
+		if (positiveResult) {
+			int hour = tp.getCurrentHour();
+			int minute = tp.getCurrentMinute();
+			String result = hour + ":" + minute;
+			persistString(result);
+			callChangeListener(result);
+		}
 	}
- 
+	
 	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see android.preference.Preference#setDefaultValue(java.lang.Object)
 	 */
 	@Override
