@@ -51,7 +51,9 @@ public class WifiBTSService extends Service {
         
         wifiMgr = (WifiManager)getSystemService(Context.WIFI_SERVICE);                                  //wifiMgr - connect to the system wifi service
         telMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);                 //telMgr - connect to the system telephony service			
-				
+		
+        final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        
 		listener = new PhoneStateListener() {                                                                                   //Listener for events from telephony manager
             public void onCellLocationChanged(CellLocation location) {                          //GsmCellLocation changed event
             	
@@ -68,8 +70,18 @@ public class WifiBTSService extends Service {
                 			Log.v("WifiBTS", "listener not in the airplane mode");
                 			if( ! wifiMgr.isWifiEnabled() ) {
                 				Log.v("WifiBTS", "listener wifi not enabled, so enable");
-                				wifiMgr.setWifiEnabled(true);
-                                triggerNotification(1,"WifiBTS", "Wifi enabled @"+ Calendar.getInstance().getTime().toLocaleString() );
+                				if (settings.getBoolean("NoDataMode", false) == true) {
+                					Log.v("WifiBTS", "listener- NoDataMode active");
+                					if (inNoDataModeWindow() == false) {
+                						Log.v("WifiBTS", "listener- not in the blackuot window");
+                    					wifiMgr.setWifiEnabled(true);
+                    					triggerNotification(1,"WifiBTS", "Wifi enabled @"+ Calendar.getInstance().getTime().toLocaleString() );
+                					}                					
+                				} else {
+                					Log.v("WifiBTS", "listener- NoDataMode inactive");
+                					wifiMgr.setWifiEnabled(true);
+                					triggerNotification(1,"WifiBTS", "Wifi enabled @"+ Calendar.getInstance().getTime().toLocaleString() );
+                				}
                 			}
                 		}
                 	}
@@ -89,18 +101,26 @@ public class WifiBTSService extends Service {
             }
 		};
 		telMgr.listen(listener, PhoneStateListener.LISTEN_CELL_LOCATION);   //Register the listener with the telephony manager
-		
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());		
+
+				
 		if (settings.getBoolean("NoDataMode", false)) {		
 			Calendar NoDataModeOn = Calendar.getInstance();
 			NoDataModeOn.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[0]));
 			NoDataModeOn.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[1]));
-			NoDataModeOn.set(Calendar.SECOND, 0);
+			NoDataModeOn.set(Calendar.SECOND, 0);			
+			
+			if (Calendar.getInstance().compareTo(NoDataModeOn) == 1) {
+				NoDataModeOn.add(Calendar.DAY_OF_MONTH, 1);  //move the alarm to the next day
+			}
 			
 			Calendar NoDataModeOff = Calendar.getInstance();		
 			NoDataModeOff.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[0]));
 			NoDataModeOff.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[1]));
 			NoDataModeOff.set(Calendar.SECOND, 0);
+			
+			if (Calendar.getInstance().compareTo(NoDataModeOff) == 1) {
+				NoDataModeOff.add(Calendar.DAY_OF_MONTH, 1);  //move the alarm to the next day
+			}
 			
 	    	Intent wifi_on = new Intent(this, RepeatingAlarmReceiver.class);	    	
 	    	wifi_on.putExtra("ToggleWifi", true);
@@ -112,7 +132,29 @@ public class WifiBTSService extends Service {
        
 	    	alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 	    	alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOff.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_on); // every 24h
+	    	Log.v("WifiBTS","Scheduled alarm for nodata on " + NoDataModeOff.getTime().toLocaleString());
 	    	alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOn.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_off);
+	    	Log.v("WifiBTS","Scheduled alarm for nodata off " + NoDataModeOn.getTime().toLocaleString());
+		}
+	}
+	
+	private boolean inNoDataModeWindow() {
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		Calendar NoDataModeOn = Calendar.getInstance();
+		NoDataModeOn.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[0]));
+		NoDataModeOn.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[1]));
+		NoDataModeOn.set(Calendar.SECOND, 0);
+		
+		Calendar NoDataModeOff = Calendar.getInstance();		
+		NoDataModeOff.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[0]));
+		NoDataModeOff.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[1]));
+		NoDataModeOff.set(Calendar.SECOND, 0);
+		
+		if ((Calendar.getInstance().compareTo(NoDataModeOn) == 1) && (Calendar.getInstance().compareTo(NoDataModeOff) == -1)) {
+			//jesteśmy w trakcie blackuot'a
+			return true;
+		} else {	
+			return false;
 		}
 	}
 	
