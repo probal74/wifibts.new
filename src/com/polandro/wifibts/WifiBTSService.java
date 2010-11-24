@@ -18,6 +18,7 @@ import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
+import android.util.Log;
 
 public class WifiBTSService extends Service {
 
@@ -59,10 +60,14 @@ public class WifiBTSService extends Service {
             	}
                 
                 if (GCL != null) {             //If current location is available
+                	Log.v("WifiBTS", "listener activated");
                 	if (isCellhere(GCL.getCid())) {
                 		// włącz
-                		if (Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) == 1) {
+                		Log.v("WifiBTS", "listener wifi on");
+                		if (Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) == 0) {
+                			Log.v("WifiBTS", "listener not in the airplane mode");
                 			if( ! wifiMgr.isWifiEnabled() ) {
+                				Log.v("WifiBTS", "listener wifi not enabled, so enable");
                 				wifiMgr.setWifiEnabled(true);
                                 triggerNotification(1,"WifiBTS", "Wifi enabled @"+ Calendar.getInstance().getTime().toLocaleString() );
                 			}
@@ -70,7 +75,9 @@ public class WifiBTSService extends Service {
                 	}
                 	else {
                 		//wyłącz
+                		Log.v("WifiBTS", "listener wifi off");
                 		if( wifiMgr.isWifiEnabled() ) {
+                			Log.v("WifiBTS", "listener wifi enabled, so disable");
                 			wifiMgr.setWifiEnabled(false);
                 			triggerNotification(1,"WifiBTS", "Wifi disabled @"+ Calendar.getInstance().getTime().toLocaleString() );
                         }
@@ -95,13 +102,13 @@ public class WifiBTSService extends Service {
 			NoDataModeOff.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[1]));
 			NoDataModeOff.set(Calendar.SECOND, 0);
 			
-	    	Intent wifi_on = new Intent(this, RepeatingAlarmReceiver.class);
+	    	Intent wifi_on = new Intent(this, RepeatingAlarmReceiver.class);	    	
 	    	wifi_on.putExtra("ToggleWifi", true);
-	    	PendingIntent pending_wifi_on = PendingIntent.getBroadcast(getApplicationContext(), 0, wifi_on, PendingIntent.FLAG_ONE_SHOT);
-		
-	    	Intent wifi_off = new Intent(this, RepeatingAlarmReceiver.class);
+	    	PendingIntent pending_wifi_on = PendingIntent.getBroadcast(getApplicationContext(), 0, wifi_on, PendingIntent.FLAG_CANCEL_CURRENT);
+		    	    	
+	    	Intent wifi_off = new Intent(this, RepeatingAlarmReceiver.class);	    	
 	    	wifi_off.putExtra("ToggleWifi", false);
-	    	PendingIntent pending_wifi_off = PendingIntent.getBroadcast(getApplicationContext(), 1, wifi_off, PendingIntent.FLAG_ONE_SHOT);        
+	    	PendingIntent pending_wifi_off = PendingIntent.getBroadcast(getApplicationContext(), 1, wifi_off, PendingIntent.FLAG_CANCEL_CURRENT);        
        
 	    	alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 	    	alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOff.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_on); // every 24h
