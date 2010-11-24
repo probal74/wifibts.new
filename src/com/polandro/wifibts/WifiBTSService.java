@@ -84,34 +84,28 @@ public class WifiBTSService extends Service {
 		telMgr.listen(listener, PhoneStateListener.LISTEN_CELL_LOCATION);   //Register the listener with the telephony manager
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());		
-		
-		Calendar NoDataModeOn = Calendar.getInstance();
-		NoDataModeOn.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[0]));
-		NoDataModeOn.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[1]));
-		NoDataModeOn.set(Calendar.SECOND, 0);
-		
-		Calendar NoDataModeOff = Calendar.getInstance();		
-		NoDataModeOff.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[0]));
-		NoDataModeOff.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[1]));
-		NoDataModeOff.set(Calendar.SECOND, 0);
-    	triggerNotification(1,"WifiBTS", "NoDataModeOn: "+ NoDataModeOn.getTime().toLocaleString());
-    	triggerNotification(2,"WifiBTS", "NoDataModeOff: "+ NoDataModeOff.getTime().toLocaleString());
-
-		
-		
 		if (settings.getBoolean("NoDataMode", false)) {		
+			Calendar NoDataModeOn = Calendar.getInstance();
+			NoDataModeOn.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[0]));
+			NoDataModeOn.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOn", "00:00").split(":")[1]));
+			NoDataModeOn.set(Calendar.SECOND, 0);
+			
+			Calendar NoDataModeOff = Calendar.getInstance();		
+			NoDataModeOff.set(Calendar.HOUR_OF_DAY, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[0]));
+			NoDataModeOff.set(Calendar.MINUTE, Integer.valueOf(settings.getString("NoDataModeOff", "00:00").split(":")[1]));
+			NoDataModeOff.set(Calendar.SECOND, 0);
+			
+	    	Intent wifi_on = new Intent(this, RepeatingAlarmReceiver.class);
+	    	wifi_on.putExtra("ToggleWifi", true);
+	    	PendingIntent pending_wifi_on = PendingIntent.getBroadcast(getApplicationContext(), 0, wifi_on, PendingIntent.FLAG_ONE_SHOT);
 		
-		Intent wifi_on = new Intent(this, RepeatingAlarmReceiver.class);
-		wifi_on.putExtra("ToggleWifi", true);
-	    PendingIntent pending_wifi_on = PendingIntent.getBroadcast(getApplicationContext(), 0, wifi_on, PendingIntent.FLAG_ONE_SHOT);
-		
-		Intent wifi_off = new Intent(this, RepeatingAlarmReceiver.class);
-		wifi_off.putExtra("ToggleWifi", false);
-		PendingIntent pending_wifi_off = PendingIntent.getBroadcast(getApplicationContext(), 1, wifi_off, PendingIntent.FLAG_ONE_SHOT);        
+	    	Intent wifi_off = new Intent(this, RepeatingAlarmReceiver.class);
+	    	wifi_off.putExtra("ToggleWifi", false);
+	    	PendingIntent pending_wifi_off = PendingIntent.getBroadcast(getApplicationContext(), 1, wifi_off, PendingIntent.FLAG_ONE_SHOT);        
        
-        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOff.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_on); // every 24h
-		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOn.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_off);
+	    	alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+	    	alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOff.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_on); // every 24h
+	    	alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, NoDataModeOn.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pending_wifi_off);
 		}
 	}
 	

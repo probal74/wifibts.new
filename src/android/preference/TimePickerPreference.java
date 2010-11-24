@@ -62,6 +62,7 @@ public class TimePickerPreference extends DialogPreference {
 	@Override
 	protected void onDialogClosed (boolean positiveResult){
 		if (positiveResult) {
+			tp.clearFocus();
 			int hour = tp.getCurrentHour();
 			int minute = tp.getCurrentMinute();
 			String result = hour + ":" + minute;
